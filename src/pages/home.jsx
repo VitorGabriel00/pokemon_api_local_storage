@@ -1,72 +1,69 @@
 import { useState } from "react";
 import "./home.css";
-import Botao from "../components/botao"
+import Botao from "../components/botao";
 
 export default function PokemonSearch() {
-  const [search, setSearch] = useState("");
-  const [pokemon, setPokemon] = useState(null);
-  const [error, setError] = useState(null);
+  const [busca, setBusca] = useState("");
+  const [pokemonEncontrado, setPokemonEncontrado] = useState(null);
+  const [mensagemErro, setMensagemErro] = useState(null);
 
-  const fetchPokemon = async () => {
-    if (!search.trim()) return;
+  const buscarPokemon = async () => {
+    if (!busca.trim()) return;
 
     try {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${search.toLowerCase()}`);
-      if (!response.ok) {
+      const resposta = await fetch(`https://pokeapi.co/api/v2/pokemon/${busca.toLowerCase()}`);
+      if (!resposta.ok) {
         throw new Error("Pokémon não encontrado");
       }
-      const data = await response.json();
-      setPokemon({
-        nome: data.name,
-        imagem: data.sprites.front_default,
-        tipos: data.types.map((t) => t.type.name).join(", "),
+      const dados = await resposta.json();
+      setPokemonEncontrado({
+        nome: dados.name,
+        imagem: dados.sprites.front_default,
+        tipos: dados.types.map((t) => t.type.name).join(", "),
       });
-      setError(null);
+      setMensagemErro(null);
     } catch (err) {
-      setError(err.message);
-      setPokemon(null);
+      setMensagemErro(err.message);
+      setPokemonEncontrado(null);
     }
   };
 
-  const adicionarAosFavoritos = () => {
-    if (!pokemon) return;
+  const adicionarFavorito = () => {
+    if (!pokemonEncontrado) return;
     const favoritos = JSON.parse(localStorage.getItem("favoritos")) || [];
-    favoritos.push(pokemon);
+    favoritos.push(pokemonEncontrado);
     localStorage.setItem("favoritos", JSON.stringify(favoritos));
     alert("Pokémon adicionado aos favoritos!");
   };
 
   return (
-<>
-<div className="botao">
-  <Botao/>
-</div>
-
-    <div className="container">
-      <input
-        type="text"
-        placeholder="Digite o nome ou ID do Pokémon"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="input-field"
-      />
-      <button onClick={fetchPokemon} className="button">
-        Buscar Pokémon
-      </button>
-
-      {error && <p className="error-message">{error}</p>}
-
-      {pokemon && (
-        <div className="pokemon-card">
-          <h2>{pokemon.nome.toUpperCase()}</h2>
-          <img src={pokemon.imagem} alt={pokemon.nome} />
-          <p>Tipo: {pokemon.tipos}</p>
-          <button onClick={adicionarAosFavoritos} className="favorites-button">
-            Adicionar aos Favoritos
-          </button>
-        </div>
-      )}
-    </div>
+    <>
+      <div className="botao">
+        <Botao />
+      </div>
+      <div className="container">
+        <input
+          type="text"
+          placeholder="Digite o nome ou ID do Pokémon"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          className="input-field"
+        />
+        <button onClick={buscarPokemon} className="button">
+          Buscar Pokémon
+        </button>
+        {mensagemErro && <p className="error-message">{mensagemErro}</p>}
+        {pokemonEncontrado && (
+          <div className="pokemon-card">
+            <h2>{pokemonEncontrado.nome.toUpperCase()}</h2>
+            <img src={pokemonEncontrado.imagem} alt={pokemonEncontrado.nome} />
+            <p>Tipo: {pokemonEncontrado.tipos}</p>
+            <button onClick={adicionarFavorito} className="favorites-button">
+              Adicionar aos Favoritos
+            </button>
+          </div>
+        )}
+      </div>
     </>
   );
 }
